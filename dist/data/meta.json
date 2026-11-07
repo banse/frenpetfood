@@ -1,0 +1,166 @@
+{
+ "block": 54077883,
+ "at": 1794005960,
+ "shard": 2,
+ "example": "0x170344f1b136bb512888f715984f96c150a86b80",
+ "price": {
+  "usd": 2.5963986987036054,
+  "at": 1794009332,
+  "pair": "0xde66c35e01ed8e619bf092352338ef94f2327337",
+  "feed": "0x71041dddad3595f9ced3dccfbe3d1f4b0a16bb70",
+  "wethIsToken0": true
+ },
+ "categories": [
+  {
+   "key": "v1_feed",
+   "label": "Feeding, first game",
+   "hint": "shroom, apple, fish and the rest; burned on the spot",
+   "counted": true
+  },
+  {
+   "key": "v1_mint",
+   "label": "Minting pets, first game",
+   "hint": "the mint price, burned on the spot",
+   "counted": true
+  },
+  {
+   "key": "feed",
+   "label": "Feeding",
+   "hint": "shrooms and other food in the shop",
+   "counted": true
+  },
+  {
+   "key": "shield",
+   "label": "Shields",
+   "hint": "protection from attacks",
+   "counted": true
+  },
+  {
+   "key": "insurance",
+   "label": "Insurance",
+   "hint": "one automatic revive",
+   "counted": true
+  },
+  {
+   "key": "mint",
+   "label": "Minting pets",
+   "hint": "the mint price",
+   "counted": true
+  },
+  {
+   "key": "other_item",
+   "label": "Other shop items",
+   "hint": "",
+   "counted": true
+  },
+  {
+   "key": "accessory",
+   "label": "Accessories",
+   "hint": "hats, masks and other cosmetics",
+   "counted": true,
+   "back": "accessory_sold"
+  },
+  {
+   "key": "dice",
+   "label": "Dice",
+   "hint": "joining dice games; winnings are taken off",
+   "counted": true,
+   "back": "dice_won"
+  },
+  {
+   "key": "upgrade",
+   "label": "Upgrades and stakes",
+   "hint": "stake to play, the gold pool and other payments that can come back",
+   "counted": false,
+   "back": "refund"
+  },
+  {
+   "key": "eth",
+   "label": "Paid in ETH",
+   "hint": "the game bought and burned this much $FP for actions paid in ETH",
+   "counted": false,
+   "burn_only": true
+  }
+ ],
+ "contracts": [
+  {
+   "label": "Fren Pet V1",
+   "address": "0x85b157ebaaf289de5301ae6694b651bf3b8df1c3"
+  },
+  {
+   "label": "the V2 diamond",
+   "address": "0x0e22b5f3e11944578b37ed04f5312dfc246f443c"
+  },
+  {
+   "label": "the $FP token",
+   "address": "0xff0c532fdb8cd566ae169c1cb157ff2bdc83e105"
+  }
+ ],
+ "totals": {
+  "wallets": 9403,
+  "spent": "3697394530065952575392622",
+  "burned": "2536318446666666666717012",
+  "by_category": {
+   "eth": [
+    119255,
+    "0",
+    "0",
+    "82516533888492459623522"
+   ],
+   "feed": [
+    318416,
+    "1133938663399285908675610",
+    "0",
+    "1003121280000000000000000"
+   ],
+   "mint": [
+    7297,
+    "729700000000000000000000",
+    "0",
+    "0"
+   ],
+   "upgrade": [
+    887071,
+    "25520592860132889803823890",
+    "19543381676477646779829466",
+    "0"
+   ],
+   "dice": [
+    6650,
+    "104722000000000000000000",
+    "87268000000000000000000",
+    "0"
+   ],
+   "shield": [
+    5784,
+    "100343000000000000000000",
+    "0",
+    "43879500000000000000000"
+   ],
+   "v1_feed": [
+    24604,
+    "922458000000000000000000",
+    "0",
+    "922458000000000000000000"
+   ],
+   "v1_mint": [
+    783,
+    "566859666666666666717012",
+    "0",
+    "566859666666666666717012"
+   ],
+   "accessory": [
+    898,
+    "417000000000000000000000",
+    "354424500000000000000000",
+    "0"
+   ],
+   "insurance": [
+    85,
+    "52180000000000000000000",
+    "0",
+    "0"
+   ]
+  }
+ }
+}

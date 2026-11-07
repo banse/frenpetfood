@@ -1,0 +1,21 @@
+{
+ "name": "frenpetfood",
+ "version": "1.0.0",
+ "sourceRepository": "banse/aidude",
+ "sourcePath": "tools/frenpet",
+ "sourceCommit": "e6b91728a146b87e608f6285ec77df358eaefcda",
+ "sourceDirty": false,
+ "inputHash": "541105e55d74fd8f4af4d6eedfd923cbfcfc9dad3694e345d2ee46583db74991",
+ "files": 259,
+ "builtAt": "2026-11-07T00:28:48Z",
+ "data": {
+  "chain": "base",
+  "block": 54077883,
+  "at": 1794005960,
+  "wallets": 9403
+ },
+ "page": {
+  "title": "Pet Food",
+  "label": "frenpetfood"
+ }
+}
