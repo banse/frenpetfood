@@ -1,11 +1,12 @@
 {
- "block": 54077883,
- "at": 1794005960,
+ "block": 54364854,
+ "at": 1794063929,
  "shard": 2,
  "example": "0x170344f1b136bb512888f715984f96c150a86b80",
  "price": {
-  "usd": 2.5963986987036054,
-  "at": 1794009332,
+  "usd": 2.6045161158807772,
+  "eth_usd": 2241.45525192,
+  "at": 1794063962,
   "pair": "0xde66c35e01ed8e619bf092352338ef94f2327337",
   "feed": "0x71041dddad3595f9ced3dccfbe3d1f4b0a16bb70",
   "wethIsToken0": true
@@ -27,31 +28,36 @@
    "key": "feed",
    "label": "Feeding",
    "hint": "shrooms and other food in the shop",
-   "counted": true
+   "counted": true,
+   "back": "feed_sold"
   },
   {
    "key": "shield",
    "label": "Shields",
    "hint": "protection from attacks",
-   "counted": true
+   "counted": true,
+   "back": "shield_sold"
   },
   {
    "key": "insurance",
    "label": "Insurance",
-   "hint": "one automatic revive",
-   "counted": true
+   "hint": "one automatic revive; sold back is taken off",
+   "counted": true,
+   "back": "insurance_sold"
   },
   {
    "key": "mint",
    "label": "Minting pets",
-   "hint": "the mint price",
-   "counted": true
+   "hint": "the mint price went to the previous minter; what the next minter handed back is taken off",
+   "counted": true,
+   "back": "mint_refund"
   },
   {
    "key": "other_item",
    "label": "Other shop items",
    "hint": "",
-   "counted": true
+   "counted": true,
+   "back": "other_item_sold"
   },
   {
    "key": "accessory",
@@ -68,18 +74,38 @@
    "back": "dice_won"
   },
   {
+   "key": "fee",
+   "label": "Game fees",
+   "hint": "a flat fee per action that went to the game's treasury, Nov 2023 to Apr 2024",
+   "counted": true
+  },
+  {
    "key": "upgrade",
-   "label": "Upgrades and stakes",
-   "hint": "stake to play, the gold pool and other payments that can come back",
+   "label": "Upgrades, stake to play",
+   "hint": "the price of an upgrade vests back over 30 days; when the pet dies, the rest goes to whoever holds it then, so a stake leaves with a pet handed on",
    "counted": false,
    "back": "refund"
   },
   {
+   "key": "gold",
+   "label": "Gold pool and swaps",
+   "hint": "stakes in the gold pool and $FP swapped for gold; both can come back",
+   "counted": false,
+   "back": "other_back"
+  },
+  {
+   "key": "rewards",
+   "label": "Rewards taken as $FP",
+   "hint": "the pets' ETH rewards, converted to $FP by the game: income, not a cost",
+   "counted": false,
+   "back": "rewards"
+  },
+  {
    "key": "eth",
    "label": "Paid in ETH",
-   "hint": "the game bought and burned this much $FP for actions paid in ETH",
-   "counted": false,
-   "burn_only": true
+   "hint": "loot boxes, passes, mints and items paid in ETH; the game bought and burned this much $FP with part of it",
+   "counted": true,
+   "unit": "eth"
   }
  ],
  "contracts": [
@@ -92,37 +118,46 @@
    "address": "0x0e22b5f3e11944578b37ed04f5312dfc246f443c"
   },
   {
+   "label": "the pet NFT",
+   "address": "0x5b51cf49cb48617084ef35e7c7d7a21914769ff1"
+  },
+  {
+   "label": "the game's treasury",
+   "address": "0x038d3417508aecf2889f79ebff61b32564282534"
+  },
+  {
    "label": "the $FP token",
    "address": "0xff0c532fdb8cd566ae169c1cb157ff2bdc83e105"
   }
  ],
  "totals": {
-  "wallets": 9403,
-  "spent": "3697394530065952575392622",
-  "burned": "2536318446666666666717012",
+  "wallets": 13921,
+  "spent": "3100534468618651226968207",
+  "eth": "203511038994602070377",
+  "burned": "2695554437360534108713180",
   "by_category": {
    "eth": [
-    119255,
+    232092,
+    "203511038994602070377",
     "0",
-    "0",
-    "82516533888492459623522"
+    "161207643466004033037666"
    ],
    "feed": [
-    318416,
-    "1133938663399285908675610",
+    294881,
+    "1133979601951984560251195",
     "0",
     "1003121280000000000000000"
    ],
    "mint": [
-    7297,
-    "729700000000000000000000",
-    "0",
+    15342,
+    "809494000000000000000000",
+    "729609316124708481010752",
     "0"
    ],
    "upgrade": [
-    887071,
-    "25520592860132889803823890",
-    "19543381676477646779829466",
+    877250,
+    "22488988598048015439645255",
+    "22142311315449244472540979",
     "0"
    ],
    "dice": [
@@ -131,11 +166,29 @@
     "87268000000000000000000",
     "0"
    ],
+   "fee": [
+    8840,
+    "72380000000000000000000",
+    "0",
+    "0"
+   ],
+   "gold": [
+    10214,
+    "3035673323532175712602850",
+    "3036082421245189273883617",
+    "0"
+   ],
    "shield": [
-    5784,
-    "100343000000000000000000",
+    5785,
+    "100349000000000000000000",
     "0",
     "43879500000000000000000"
+   ],
+   "rewards": [
+    28203,
+    "0",
+    "810349856276175216192191",
+    "0"
    ],
    "v1_feed": [
     24604,
@@ -152,13 +205,13 @@
    "accessory": [
     898,
     "417000000000000000000000",
-    "354424500000000000000000",
+    "320620500000000000000000",
     "0"
    ],
    "insurance": [
     85,
     "52180000000000000000000",
-    "0",
+    "33804000000000000000000",
     "0"
    ]
   }

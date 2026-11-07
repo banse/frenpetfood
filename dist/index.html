@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pet Food</title>
-<meta name="description" content="Enter a wallet and see how much $FP it spent on the Fren Pet game on Base: per action, how much was burned, and what that is in dollars right now.">
+<meta name="description" content="Enter a wallet and see how much $FP and ETH it spent on the Fren Pet game on Base: per action, how much was burned, and what that is in dollars right now.">
 <meta property="og:title" content="Pet Food">
 <meta property="og:description" content="How much $FP a wallet spent on the Fren Pet game on Base, what it went to, and how much was burned.">
 <meta name="theme-color" content="#DBFEE6">
@@ -85,12 +85,12 @@ tr.off td:first-child { font-weight: 500; }
   <p class="who" id="who" role="status"></p>
 
   <p class="say" id="s1"><span id="subj">This wallet</span> spent <b id="spent" class="wait">…</b> on Fren Pet. Right now, that's <b id="usd" class="wait">…</b>.</p>
-  <p class="say" id="s2"><b id="burned" class="wait">…</b> of it was burned for good.</p>
+  <p class="say" id="s2"><b id="burned" class="wait">…</b> <span id="burnedTail">of it was burned for good.</span></p>
   <p class="say small" id="s3" hidden></p>
 
   <table id="rows" hidden>
     <caption>What the tokens went to</caption>
-    <thead><tr><th>Action</th><th>Times</th><th>$FP spent</th><th>Today</th><th>Burned</th></tr></thead>
+    <thead><tr><th>Action</th><th>Times</th><th>Spent</th><th>Today</th><th>$FP burned</th></tr></thead>
     <tbody></tbody>
   </table>
   <p class="note" id="note" hidden></p>
@@ -118,11 +118,12 @@ var SPRITES = {"icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"250 2
     return whole.toLocaleString("en-US") + (d ? "." + frac : "");
   }
   function num(wei) { return Number(BigInt(wei) / 10n ** 12n) / 1e6; }
-  function usd(wei) {
-    if (!price) return null;
-    var v = num(wei) * price.usd;
-    return "$" + v.toLocaleString("en-US", {minimumFractionDigits: v < 100 ? 2 : 0, maximumFractionDigits: v < 100 ? 2 : 0});
-  }
+  function eth(wei) { return fp(wei, 4); }
+  function dollars(v) { return "$" + v.toLocaleString("en-US", {minimumFractionDigits: v < 100 ? 2 : 0, maximumFractionDigits: v < 100 ? 2 : 0}); }
+  function usd(wei) { return price ? dollars(num(wei) * price.usd) : null; }
+  function usdEth(wei) { return price && price.ethUsd ? dollars(num(wei) * price.ethUsd) : null; }
+  function usdBoth(fpWei, ethWei) { return price && (price.ethUsd || ethWei === 0n) ? dollars(num(fpWei) * price.usd + num(ethWei) * (price.ethUsd || 0)) : null; }
+  function spentText(fpWei, ethWei) { return (fpWei > 0n || ethWei === 0n ? fp(fpWei) + " $FP" : "") + (fpWei > 0n && ethWei > 0n ? " and " : "") + (ethWei > 0n ? eth(ethWei) + " ETH" : ""); }
   function set(id, text, wait) { var e = $(id); e.textContent = text; e.classList.toggle("wait", !!wait); }
 
   function rpcBatch(calls) {
@@ -147,59 +148,63 @@ var SPRITES = {"icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"250 2
       var weth = w(r[0], p.wethIsToken0 ? 0 : 1), tok = w(r[0], p.wethIsToken0 ? 1 : 0), eth = w(r[1], 1), at = Number(w(r[1], 3));
       if (weth === 0n || tok === 0n || eth <= 0n) throw new Error("empty pool or feed");
       var perToken = Number(weth * 10n ** 12n / tok) / 1e12;
-      return {usd: perToken * Number(eth) / 1e8, live: true, at: at};
+      return {usd: perToken * Number(eth) / 1e8, ethUsd: Number(eth) / 1e8, live: true, at: at};
     });
   }
 
   function render() {
     var rec = current && current.rec, who = current && current.addr;
     var cats = meta.categories, counted = cats.filter(function (c) { return c.counted; });
-    var tot = 0n, burned = 0n, rows = [], off = [];
+    var tot = 0n, ethTot = 0n, burned = 0n, rows = [], off = [];
     cats.forEach(function (c) {
       var r = rec && rec[c.key]; if (!r) return;
       var n = r[0], spent = BigInt(r[1]), back = BigInt(r[2]), burn = BigInt(r[3]);
       var items = r[4] && Object.keys(r[4]).length ? Object.keys(r[4]).map(function (k) { return k + " ×" + r[4][k].toLocaleString("en-US"); }).join(" · ") : "";
-      if (c.counted) { tot += spent; burned += burn; rows.push({c: c, n: n, spent: spent, back: back, burn: burn, items: items}); }
+      if (c.counted) { burned += burn; rows.push({c: c, n: n, spent: spent, back: back, burn: burn, items: items, eth: c.unit === "eth"}); }
       else off.push({c: c, n: n, spent: spent, back: back, burn: burn, items: items});
     });
     if (!rec || (!rows.length && !off.length)) {
       set("spent", "0 $FP"); set("usd", "$0");
       $("s2").hidden = true; $("rows").hidden = true; $("note").hidden = true;
-      $("s3").hidden = false; $("s3").textContent = "It never paid the game in $FP. Either the pets were free, or they were someone else's.";
+      $("s3").hidden = false; $("s3").textContent = "It never paid the game, in $FP or in ETH. Either the pets were free, or they were someone else's.";
       return;
     }
-    set("spent", fp(tot) + " $FP"); set("usd", usd(tot) || "…", !price);
-    $("s2").hidden = tot === 0n;
-    set("burned", fp(burned) + " $FP");
     $("s3").hidden = true;
-    rows.sort(function (a, b) { return a.spent < b.spent ? 1 : a.spent > b.spent ? -1 : 0; });
-    tot = rows.reduce(function (t, x) { return t + (x.c.back ? (x.spent > x.back ? x.spent - x.back : 0n) : x.spent); }, 0n);
-    set("spent", fp(tot) + " $FP"); set("usd", usd(tot) || "…", !price);
+    rows.forEach(function (x) { x.net = x.c.back ? (x.spent > x.back ? x.spent - x.back : 0n) : x.spent; });
+    rows.sort(function (a, b) { return a.net < b.net ? 1 : a.net > b.net ? -1 : 0; });   // ETH rows sort by their raw amount: small, so last
+    tot = rows.reduce(function (t, x) { return x.eth ? t : t + x.net; }, 0n);
+    ethTot = rows.reduce(function (t, x) { return x.eth ? t + x.net : t; }, 0n);
+    set("spent", spentText(tot, ethTot)); set("usd", usdBoth(tot, ethTot) || "…", !price);
+    $("s2").hidden = tot === 0n && ethTot === 0n;
+    set("burned", fp(burned) + " $FP");
+    $("burnedTail").textContent = ethTot > 0n ? "was burned for good, counting what the game bought with the ETH." : "of it was burned for good.";
     var html = rows.map(function (x) {
-      var net = x.c.back ? (x.spent > x.back ? x.spent - x.back : 0n) : x.spent;
+      var net = x.net;
       var small = x.items || x.c.hint; if (x.c.back && x.back > 0n) small += (small ? " · " : "") + fp(x.back) + " came back and is taken off";
       return "<tr><td>" + esc(x.c.label) + (small ? "<small>" + esc(small) + "</small>" : "") + "</td><td data-k=\"times\">" + x.n.toLocaleString("en-US") +
-        "</td><td data-k=\"spent\">" + fp(net) + "</td><td data-k=\"today\">" + (usd(net) || "…") + "</td><td data-k=\"burned\">" + fp(x.burn) + "</td></tr>";
+        "</td><td data-k=\"spent\">" + (x.eth ? eth(net) + " ETH" : fp(net)) + "</td><td data-k=\"today\">" + ((x.eth ? usdEth(net) : usd(net)) || "…") + "</td><td data-k=\"burned\">" + fp(x.burn) + "</td></tr>";
     }).join("");
-    if (rows.length > 1) html += "<tr class=\"sum\"><td>All counted</td><td></td><td data-k=\"spent\">" + fp(tot) + "</td><td data-k=\"today\">" + (usd(tot) || "…") + "</td><td data-k=\"burned\">" + fp(burned) + "</td></tr>";
+    if (rows.length > 1) html += "<tr class=\"sum\"><td>All counted</td><td></td><td data-k=\"spent\">" + spentText(tot, ethTot) + "</td><td data-k=\"today\">" + (usdBoth(tot, ethTot) || "…") + "</td><td data-k=\"burned\">" + fp(burned) + "</td></tr>";
     html += off.map(function (x) {
       return "<tr class=\"off\"><td>" + esc(x.c.label) + "<small>" + esc(x.c.hint || "not counted") + "</small></td><td data-k=\"times\">" + (x.n ? x.n.toLocaleString("en-US") : "") +
         "</td><td data-k=\"paid in\">" + (x.spent ? fp(x.spent) : "") + "</td><td data-k=\"came back\">" + (x.back ? fp(x.back) + " <span class=\"d\">back</span>" : "") + "</td><td data-k=\"burned\">" + (x.burn ? fp(x.burn) : "") + "</td></tr>";
     }).join("");
     $("rows").querySelector("tbody").innerHTML = html; $("rows").hidden = false;
     $("note").hidden = !off.length;
-    $("note").textContent = off.length ? "The dashed rows are not in the total: those tokens can come back to the wallet." : "";
+    $("note").textContent = off.length ? "The dashed rows are not in the total: stakes and swaps that can still come back, and rewards the game paid out." : "";
   }
 
   function renderAll() {
     var t = meta.totals;
-    $("a1").innerHTML = "All together, <b>" + t.wallets.toLocaleString("en-US") + "</b> wallets spent <b>" + fp(t.spent, 0) + " $FP</b> on the game" +
-      (price ? ", <b>" + usd(t.spent) + "</b> today" : "") + ". <b>" + fp(t.burned, 0) + " $FP</b> of it was burned.";
+    var tEth = BigInt(t.eth || "0");
+    $("a1").innerHTML = "All together, <b>" + t.wallets.toLocaleString("en-US") + "</b> wallets spent <b>" + fp(t.spent, 0) + " $FP</b>" +
+      (tEth > 0n ? " and <b>" + fp(tEth, 0) + " ETH</b>" : "") + " on the game" + (price ? ", <b>" + (usdBoth(BigInt(t.spent), tEth) || "…") + "</b> today" : "") +
+      ". <b>" + fp(t.burned, 0) + " $FP</b> " + (tEth > 0n ? "was burned, counting what the game bought with the ETH." : "of it was burned.");
     var p = meta.price, when = function (s) { return new Date(s * 1000).toISOString().replace("T", " ").slice(0, 16) + " UTC"; };
     var src = price && price.live ? "read just now from the Uniswap v2 pool on Base and Chainlink's ETH/USD feed" : "as of " + when(p.at) + " (the live read failed)";
     $("foot").innerHTML =
-      "<p>1 $FP = " + (price ? "$" + price.usd.toFixed(price.usd < 1 ? 4 : 2) : "?") + ", " + src + ". $FP is the Fren Pet token on Base; on Ethereum the same token is called $IMD.</p>" +
-      "<p>Counted: tokens a wallet paid to the game that could not come back. Covered: " + meta.contracts.map(function (c) {
+      "<p>1 $FP = " + (price ? "$" + price.usd.toFixed(price.usd < 1 ? 4 : 2) : "?") + (price && price.ethUsd ? ", 1 ETH = $" + price.ethUsd.toFixed(0) : "") + ", " + src + ". $FP is the Fren Pet token on Base; on Ethereum the same token is called $IMD.</p>" +
+      "<p>Counted: tokens a wallet paid to the game that did not come back, and the ETH it paid for loot boxes, passes, mints and items (the game bought and burned $FP with part of that ETH and kept the rest for the ETH rewards). Stakes are not counted: a living pet's stake vests back, and a kill pays the rest to whoever holds the pet then. Purchases a helper contract made for a wallet's pets count for that wallet. Covered: " + meta.contracts.map(function (c) {
         return "<a href=\"https://basescan.org/address/" + c.address + "\" target=\"_blank\" rel=\"noopener\">" + esc(c.label) + "</a>"; }).join(", ") +
       ". Data up to block " + meta.block.toLocaleString("en-US") + " (" + when(meta.at) + ").</p>" +
       "<p>A fan page. Not made by, or affiliated with, Fren Pet. Sprites and colours from the Fren Pet brand pack.</p>";
@@ -250,7 +255,7 @@ var SPRITES = {"icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"250 2
 
   $("logo").innerHTML = SPRITES.icon;
   fetch("data/meta.json", {cache: "no-cache"}).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (m) {
-    meta = m; price = {usd: m.price.usd, live: false, at: m.price.at};
+    meta = m; price = {usd: m.price.usd, ethUsd: m.price.eth_usd || 0, live: false, at: m.price.at};
     fromHash(); renderAll();
     livePrice().then(function (p) { price = p; if (current && current.loaded) render(); renderAll(); }).catch(function () { renderAll(); });
   }).catch(function () { $("who").className = "who bad"; $("who").textContent = "The page's data could not be loaded."; });
